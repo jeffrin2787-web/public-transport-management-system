@@ -119,4 +119,66 @@ public class ReportService {
         summary.put("activeSchedulesCount", schedules.size());
         return summary;
     }
+
+    /**
+     * Real-time dynamic chart data for live interactive visualization.
+     * Updates automatically whenever tickets are booked or cancelled.
+     */
+    public Map<String, Object> getLiveChartData() {
+        List<Booking> allBookings = bookingRepository.findAll();
+        List<Schedule> allSchedules = scheduleRepository.findAll();
+
+        // 1. Route Demand & Revenue
+        Map<String, Double> revByRoute = new LinkedHashMap<>();
+        Map<String, Integer> seatsByRoute = new LinkedHashMap<>();
+
+        for (Booking b : allBookings) {
+            if (b.getStatus() == BookingStatus.CONFIRMED) {
+                String rName = b.getSchedule().getRoute().getSourceCity() + " -> " + b.getSchedule().getRoute().getDestinationCity();
+                revByRoute.put(rName, revByRoute.getOrDefault(rName, 0.0) + b.getTotalAmount());
+                seatsByRoute.put(rName, seatsByRoute.getOrDefault(rName, 0) + b.getTickets().size());
+            }
+        }
+
+        // 2. Bus Type Occupancy
+        Map<String, List<Double>> occByBusType = new HashMap<>();
+        for (Schedule s : allSchedules) {
+            String bType = s.getBus().getBusType().name();
+            int cap = s.getBus().getCapacity();
+            double pct = cap > 0 ? ((double) (cap - s.getAvailableSeats()) / cap) * 100.0 : 0.0;
+            occByBusType.computeIfAbsent(bType, k -> new ArrayList<>()).add(pct);
+        }
+
+        Map<String, Double> avgOccByType = new LinkedHashMap<>();
+        occByBusType.forEach((type, list) -> {
+            double avg = list.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            avgOccByType.put(type, Math.round(avg * 10.0) / 10.0);
+        });
+
+        // 3. Booking Status counts
+        long confirmedCount = allBookings.stream().filter(b -> b.getStatus() == BookingStatus.CONFIRMED).count();
+        long cancelledCount = allBookings.stream().filter(b -> b.getStatus() == BookingStatus.CANCELLED).count();
+
+        // 4. Daily booking trend
+        Map<String, Long> dailyTrend = allBookings.stream()
+                .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
+                .collect(Collectors.groupingBy(
+                        b -> b.getBookingTime().toLocalDate().toString(),
+                        TreeMap::new,
+                        Collectors.counting()
+                ));
+
+        Map<String, Object> chartData = new HashMap<>();
+        chartData.put("routeLabels", new ArrayList<>(seatsByRoute.keySet()));
+        chartData.put("routeDemandData", new ArrayList<>(seatsByRoute.values()));
+        chartData.put("routeRevenueData", new ArrayList<>(revByRoute.values()));
+        chartData.put("busTypeLabels", new ArrayList<>(avgOccByType.keySet()));
+        chartData.put("busTypeOccupancyData", new ArrayList<>(avgOccByType.values()));
+        chartData.put("statusLabels", Arrays.asList("Confirmed", "Cancelled"));
+        chartData.put("statusData", Arrays.asList(confirmedCount, cancelledCount));
+        chartData.put("dailyLabels", new ArrayList<>(dailyTrend.keySet()));
+        chartData.put("dailyData", new ArrayList<>(dailyTrend.values()));
+
+        return chartData;
+    }
 }

@@ -35,4 +35,9 @@ public class ReportController {
     public ResponseEntity<List<Map<String, Object>>> getOccupancy() {
         return ResponseEntity.ok(reportService.getScheduleOccupancy());
     }
+
+    @GetMapping("/chart-data")
+    public ResponseEntity<Map<String, Object>> getLiveChartData() {
+        return ResponseEntity.ok(reportService.getLiveChartData());
+    }
 }
