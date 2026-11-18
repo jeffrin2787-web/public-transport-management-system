@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNR Enquiry & Cancellation | VCET Transit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon"><i class="fas fa-bus"></i></div>
+                <div class="brand-text">
+                    <h1>Tamil Nadu State Transit</h1>
+                    <span>VCET Assessment - Scenario 10 | Author: Jeffrin (732925ITR040)</span>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link"><i class="fas fa-search"></i> Book Tickets</a>
+                <a href="/ticket.html" class="nav-link active"><i class="fas fa-ticket-alt"></i> PNR Status & Cancel</a>
+                <a href="/reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Travel Analytics</a>
+                <a href="/admin.html" class="nav-link"><i class="fas fa-user-shield"></i> Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero-banner" style="padding: 2.5rem 1.5rem 3.5rem;">
+        <div class="hero-content">
+            <h2 class="hero-title" style="font-size: 2rem;">Manage Booking & Cancellation</h2>
+            <p class="hero-subtitle">Retrieve live boarding pass or cancel confirmed seats with instant inventory release.</p>
+        </div>
+    </div>
+
+    <main class="container" style="max-width: 800px; margin-top: -2rem;">
+        <div class="search-card" style="margin-bottom: 2rem;">
+            <form id="pnrForm" onsubmit="lookupPnr(event)">
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="pnrInput" class="form-control" placeholder="Enter PNR (e.g. TCK-2026-1001)" required style="text-transform: uppercase;">
+                    <button type="submit" class="btn-primary" style="white-space: nowrap;"><i class="fas fa-search"></i> Track PNR</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="pnrResult"></div>
+    </main>
+
+    <footer>
+        <p><strong>Velalar College of Engineering and Technology (Autonomous), Erode – 638012</strong></p>
+        <p>Scenario 10: Public Transport Management and Passenger Travel Analysis System</p>
+        <p>Developed by: <strong>Jeffrin</strong> | Register No: <strong>732925ITR040</strong> | Class: <strong>25IT3A</strong></p>
+    </footer>
+
+    <script>
+        async function lookupPnr(e) {
+            e.preventDefault();
+            const pnr = document.getElementById("pnrInput").value.trim().toUpperCase();
+            const resDiv = document.getElementById("pnrResult");
+
+            resDiv.innerHTML = `<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin fa-2x"></i> Checking database...</div>`;
+
+            try {
+                const res = await fetch(`/api/bookings/${pnr}`);
+                if (!res.ok) {
+                    resDiv.innerHTML = `
+                        <div style="background: #fee2e2; border: 1px solid #f87171; border-radius: 12px; padding: 1.5rem; color: #991b1b; text-align: center;">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            <h4 style="margin-top: 0.5rem; font-weight: 700;">No Booking Found</h4>
+                            <p style="font-size: 0.9rem;">PNR "${pnr}" does not exist in the system records.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const b = await res.json();
+                const isCancelled = b.status === 'CANCELLED';
+                const statusColor = isCancelled ? '#dc2626' : '#16a34a';
+
+                resDiv.innerHTML = `
+                    <div style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">PASSENGER NAME RECORD (PNR)</span>
+                                <h3 style="font-size: 1.5rem; color: #1e40af; font-weight: 800;">${b.pnrNumber}</h3>
+                            </div>
+                            <span style="background: ${isCancelled ? '#fee2e2' : '#dcfce7'}; color: ${statusColor}; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 20px; font-size: 0.85rem;">
+                                ${b.status}
+                            </span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.95rem;">
+                            <div><strong>Passenger Name:</strong> ${b.passenger.fullName} (${b.passenger.age} yrs, ${b.passenger.gender})</div>
+                            <div><strong>Contact:</strong> ${b.passenger.phoneNumber}</div>
+                            <div><strong>Route:</strong> ${b.schedule.route.sourceCity} &rarr; ${b.schedule.route.destinationCity}</div>
+                            <div><strong>Distance:</strong> ${b.schedule.route.distanceKm} km</div>
+                            <div><strong>Bus:</strong> ${b.schedule.bus.busNumber} (${b.schedule.bus.busType})</div>
+                            <div><strong>Travel Date & Time:</strong> ${b.schedule.travelDate} at ${b.schedule.departureTime.substring(0, 5)}</div>
+                            <div><strong>Allocated Seat(s):</strong> <span style="color: #0284c7; font-weight: 700;">${b.tickets.map(t => t.seatNumber).join(', ')}</span></div>
+                            <div><strong>Fare Amount:</strong> ₹${b.totalAmount.toFixed(2)} (${b.paymentStatus})</div>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                            <button class="btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print Boarding Pass</button>
+                            ${!isCancelled ? `
+                                <button class="btn-danger" onclick="cancelTicket('${b.pnrNumber}')">
+                                    <i class="fas fa-times-circle"></i> Cancel Ticket & Release Seat
+                                </button>
+                            ` : `<span style="color: #64748b; font-size: 0.85rem; font-style: italic;">Seats for this booking have been released back to public inventory.</span>`}
+                        </div>
+                    </div>
+                `;
+
+            } catch (err) {
+                resDiv.innerHTML = `<div style="color: #dc2626;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function cancelTicket(pnr) {
+            if (!confirm(`Are you sure you want to cancel booking ${pnr}? Your seats will be released immediately.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/bookings/cancel/${pnr}`, { method: 'POST' });
+                const result = await res.json();
+                if (res.ok) {
+                    alert(result.message || "Booking successfully cancelled!");
+                    lookupPnr(new Event('submit'));
+                } else {
+                    alert("Cancellation error: " + (result.message || "Failed to cancel"));
+                }
+            } catch (err) {
+                alert("Network error: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

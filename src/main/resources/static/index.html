@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Transport Management System | VCET IT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon"><i class="fas fa-bus"></i></div>
+                <div class="brand-text">
+                    <h1>Tamil Nadu State Transit</h1>
+                    <span>VCET Assessment - Scenario 10 | Author: Jeffrin (732925ITR040)</span>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link active"><i class="fas fa-search"></i> Book Tickets</a>
+                <a href="/ticket.html" class="nav-link"><i class="fas fa-ticket-alt"></i> PNR Status & Cancel</a>
+                <a href="/reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Travel Analytics</a>
+                <a href="/admin.html" class="nav-link"><i class="fas fa-user-shield"></i> Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-banner">
+        <div class="hero-content">
+            <span class="hero-tag"><i class="fas fa-shield-alt"></i> Safe, Fast & Certified Bus Transit Network</span>
+            <h2 class="hero-title">Connecting Tamil Nadu with Comfort & Safety</h2>
+            <p class="hero-subtitle">Real-time seat availability, instant e-ticket issuance, and synchronized overbooking prevention.</p>
+        </div>
+    </section>
+
+    <!-- Search Box -->
+    <div class="search-card">
+        <form onsubmit="handleSearch(event)" class="search-grid">
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Source City (From)</label>
+                <select id="searchSource" class="form-control">
+                    <option value="">All Source Cities</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-location-arrow" style="color: #10b981;"></i> Destination City (To)</label>
+                <select id="searchDestination" class="form-control">
+                    <option value="">All Destinations</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt" style="color: #3b82f6;"></i> Travel Date</label>
+                <input type="date" id="searchDate" class="form-control">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Schedules Listing -->
+    <main class="container">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Available Bus Schedules</h3>
+                <p style="font-size: 0.85rem; color: #64748b;">Showing verified state express trips and intercity cruisers</p>
+            </div>
+            <button class="btn-secondary" onclick="loadSchedules()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <div id="scheduleList" class="bus-list">
+            <!-- Dynamic Bus Cards Populated via JS -->
+        </div>
+    </main>
+
+    <!-- Interactive Seat Selection Modal -->
+    <div id="seatModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSeatModal()">&times;</button>
+            <h3 id="modalRoute" style="font-size: 1.4rem; font-weight: 800; color: #1e293b;">Select Seats</h3>
+            <p id="modalBusInfo" style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;"></p>
+
+            <div class="seat-matrix-wrapper">
+                <div class="bus-cabin">
+                    <div class="steering-wheel"><i class="fas fa-circle-notch"></i> Driver Cabin</div>
+                    <div id="seatGrid" class="seat-grid">
+                        <!-- Seats generated dynamically -->
+                    </div>
+                </div>
+
+                <div class="seat-legend">
+                    <div class="legend-item"><div class="legend-box legend-available"></div> Available</div>
+                    <div class="legend-item"><div class="legend-box legend-selected"></div> Selected</div>
+                    <div class="legend-item"><div class="legend-box legend-booked"></div> Booked / Reserved</div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Selected Seat Numbers:</div>
+                        <div id="selectedSeatsDisplay" style="font-weight: 800; color: #1e40af; font-size: 1.1rem;">None</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Total Payable Fare:</div>
+                        <div id="totalFareDisplay" style="font-weight: 800; color: #047857; font-size: 1.25rem;">₹0.00</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="form-group">
+                        <label>Passenger Full Name *</label>
+                        <input type="text" id="passName" class="form-control" placeholder="e.g. Jeffrin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age *</label>
+                        <input type="number" id="passAge" class="form-control" placeholder="20" min="1" max="110" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender *</label>
+                        <select id="passGender" class="form-control" required>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="passPhone" class="form-control" placeholder="9876543210" pattern="[0-9]{10}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="passEmail" class="form-control" placeholder="jeffrin@vcet.ac.in">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="closeSeatModal()">Cancel</button>
+                    <button type="submit" id="confirmBookingBtn" class="btn-primary" disabled>
+                        <i class="fas fa-check-circle"></i> Confirm & Reserve Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ticket Confirmation Modal -->
+    <div id="ticketModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1rem;">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #1e293b;">Booking Confirmed!</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.25rem;">Your reservation is locked and seats are secured.</p>
+
+            <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 1.25rem; margin: 1.5rem 0; text-align: left;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Booking PNR:</span>
+                    <strong id="ticketPnr" style="color: #1e40af; font-size: 1.05rem;">TCK-2026-XXXX</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Passenger:</span>
+                    <strong id="ticketPassenger">Jeffrin</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Route:</span>
+                    <strong id="ticketRoute">Erode to Chennai Central</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Date & Time:</span>
+                    <strong id="ticketDate">2026-11-20 at 21:30</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Reserved Seat(s):</span>
+                    <strong id="ticketSeats" style="color: #059669;">1, 2</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 0.5rem; margin-top: 0.5rem;">
+                    <span style="color: #64748b; font-size: 0.85rem;">Total Amount Paid:</span>
+                    <strong id="ticketAmount" style="color: #0f172a; font-size: 1.1rem;">₹1500.00</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn-secondary" style="flex: 1;" onclick="closeTicketModal()">Close</button>
+                <button class="btn-primary" style="flex: 2;" onclick="window.print()"><i class="fas fa-print"></i> Print E-Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong>Velalar College of Engineering and Technology (Autonomous), Erode – 638012</strong></p>
+        <p>Department of Information Technology | Academic Year: 2026-27 (ODD)</p>
+        <p>Scenario 10: Public Transport Management and Passenger Travel Analysis System</p>
+        <p>Developed by: <strong>Jeffrin</strong> | Register No: <strong>732925ITR040</strong> | Class: <strong>25IT3A</strong></p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

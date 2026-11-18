@@ -1,0 +1,25 @@
+# ==============================================================================
+# RENDER BLUEPRINT (INFRASTRUCTURE AS CODE)
+# 24/7 LIVE WEB APPLICATION + MANAGED POSTGRESQL DATABASE
+# ==============================================================================
+databases:
+  - name: transport-db
+    databaseName: public_transport_db
+    user: transport_user
+    plan: free
+    region: singapore
+
+services:
+  - type: web
+    name: vcet-public-transport-system
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: transport-db
+          property: connectionString
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Analytics & BI Dashboard | VCET</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 1.75rem;
+            margin-top: 2rem;
+        }
+        .viz-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+        }
+        .viz-card h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .viz-card p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+        .viz-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon"><i class="fas fa-bus"></i></div>
+                <div class="brand-text">
+                    <h1>Tamil Nadu State Transit</h1>
+                    <span>VCET Assessment - Scenario 10 | Author: Jeffrin (732925ITR040)</span>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link"><i class="fas fa-search"></i> Book Tickets</a>
+                <a href="/ticket.html" class="nav-link"><i class="fas fa-ticket-alt"></i> PNR Status & Cancel</a>
+                <a href="/reports.html" class="nav-link active"><i class="fas fa-chart-line"></i> Travel Analytics</a>
+                <a href="/admin.html" class="nav-link"><i class="fas fa-user-shield"></i> Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero-banner" style="padding: 2rem 1.5rem 3rem;">
+        <div class="hero-content">
+            <h2 class="hero-title" style="font-size: 2rem;">Passenger Travel Analysis & Intelligence</h2>
+            <p class="hero-subtitle">Data Science insights, route revenue benchmarks, and fleet occupancy distributions.</p>
+        </div>
+    </div>
+
+    <main class="container" style="margin-top: -2rem;">
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-ticket-alt"></i></div>
+                <div>
+                    <div id="statTotalBookings" class="stat-val">--</div>
+                    <div class="stat-lbl">Total Booking Transactions</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #ecfdf5; color: #059669;"><i class="fas fa-indian-rupee-sign"></i></div>
+                <div>
+                    <div id="statTotalRev" class="stat-val">₹--</div>
+                    <div class="stat-lbl">Gross Revenue Generated</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-chair"></i></div>
+                <div>
+                    <div id="statOccupancy" class="stat-val">--%</div>
+                    <div class="stat-lbl">Average Bus Occupancy Rate</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fdf2f8; color: #db2777;"><i class="fas fa-route"></i></div>
+                <div>
+                    <div id="statActiveTrips" class="stat-val">--</div>
+                    <div class="stat-lbl">Scheduled Active Trips</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Operational Reports Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <!-- Route Revenue Table -->
+            <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">
+                    <i class="fas fa-chart-bar" style="color: #2563eb;"></i> Live Route-Wise Revenue
+                </h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Transit Route</th>
+                                <th>Bookings</th>
+                                <th>Revenue (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenueTableBody">
+                            <tr><td colspan="3" style="text-align: center; padding: 1.5rem;">Loading route revenue...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Occupancy Table -->
+            <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">
+                    <i class="fas fa-percent" style="color: #059669;"></i> Real-Time Seat Occupancy
+                </h3>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Bus & Route</th>
+                                <th>Capacity</th>
+                                <th>Booked</th>
+                                <th>Occupancy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="occupancyTableBody">
+                            <tr><td colspan="4" style="text-align: center; padding: 1.5rem;">Loading occupancy rates...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Python Data Science Visualizations Section -->
+        <div style="border-top: 2px dashed #cbd5e1; padding-top: 2rem;">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title"><i class="fab fa-python" style="color: #3776ab;"></i> Python Exploratory Data Analysis (EDA)</h3>
+                    <p style="font-size: 0.85rem; color: #64748b;">Generated via Pandas, NumPy, Matplotlib & Seaborn (25ITC31 Course Rubric)</p>
+                </div>
+                <span style="background: #dbeafe; color: #1e40af; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">
+                    7 High-Resolution Figures
+                </span>
+            </div>
+
+            <div class="viz-grid">
+                <!-- Chart 1 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-chart-column" style="color: #2563eb;"></i> Route-Wise Passenger Demand</h4>
+                    <p>Identifies high-density passenger volume across Tamil Nadu corridors (Erode, Chennai, Coimbatore).</p>
+                    <img src="/visualizations/01_route_wise_passenger_demand.png" alt="Route Passenger Demand">
+                </div>
+
+                <!-- Chart 2 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-money-bill-wave" style="color: #059669;"></i> Gross Revenue by Transit Route</h4>
+                    <p>Financial breakdown of ticket collections per intercity transit corridor in Indian Rupees (₹).</p>
+                    <img src="/visualizations/02_route_wise_revenue.png" alt="Route Revenue">
+                </div>
+
+                <!-- Chart 3 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-sliders-h" style="color: #d97706;"></i> Seat Occupancy Distribution by Bus Type</h4>
+                    <p>Box plot showing median, IQR, and variance of occupancy across AC Sleeper, Semi-Sleeper & Deluxe buses.</p>
+                    <img src="/visualizations/03_bus_type_occupancy_distribution.png" alt="Bus Type Occupancy">
+                </div>
+
+                <!-- Chart 4 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-clock" style="color: #7c3aed;"></i> Hourly Schedule Departure Profile</h4>
+                    <p>Histogram and Kernel Density Estimate (KDE) demonstrating evening/night peak departure patterns.</p>
+                    <img src="/visualizations/04_hourly_departure_pattern.png" alt="Hourly Departure Profile">
+                </div>
+
+                <!-- Chart 5 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-chart-pie" style="color: #ef4444;"></i> Booking Status Distribution (Donut Chart)</h4>
+                    <p>Visual proportion of confirmed passenger tickets versus customer cancellations.</p>
+                    <img src="/visualizations/05_booking_status_distribution.png" alt="Booking Status Distribution">
+                </div>
+
+                <!-- Chart 6 -->
+                <div class="viz-card">
+                    <h4><i class="fas fa-th" style="color: #0284c7;"></i> Correlation Heatmap of Transit KPIs</h4>
+                    <p>Pearson correlation coefficients among route distance, fare, passenger count, and occupancy.</p>
+                    <img src="/visualizations/06_correlation_heatmap.png" alt="Correlation Heatmap">
+                </div>
+
+                <!-- Chart 7 -->
+                <div class="viz-card" style="grid-column: 1 / -1;">
+                    <h4><i class="fas fa-chart-line" style="color: #0ea5e9;"></i> Daily Passenger Booking Volume Trends</h4>
+                    <p>Time-series demand curve tracking ticket booking fluctuations over days of operation.</p>
+                    <img src="/visualizations/07_daily_booking_trends.png" alt="Daily Booking Trends">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p><strong>Velalar College of Engineering and Technology (Autonomous), Erode – 638012</strong></p>
+        <p>Department of Information Technology | Foundations of Data Science (25ITC31)</p>
+        <p>Developed by: <strong>Jeffrin</strong> | Register No: <strong>732925ITR040</strong> | Class: <strong>25IT3A</strong></p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            loadKPIs();
+            loadRouteRevenue();
+            loadOccupancy();
+        });
+
+        async function loadKPIs() {
+            try {
+                const res = await fetch('/api/reports/summary');
+                const data = await res.json();
+                document.getElementById("statTotalBookings").textContent = data.totalBookings || 0;
+                document.getElementById("statTotalRev").textContent = `₹${(data.totalRevenue || 0).toLocaleString()}`;
+                document.getElementById("statOccupancy").textContent = `${data.averageOccupancyRate || 0}%`;
+                document.getElementById("statActiveTrips").textContent = data.activeSchedulesCount || 0;
+            } catch (err) {
+                console.error("Failed to load KPIs:", err);
+            }
+        }
+
+        async function loadRouteRevenue() {
+            const tbody = document.getElementById("revenueTableBody");
+            try {
+                const res = await fetch('/api/reports/route-revenue');
+                const list = await res.json();
+
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center;">No revenue records.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = list.map(item => `
+                    <tr>
+                        <td><strong>${item.route}</strong></td>
+                        <td>${item.bookingCount} bookings</td>
+                        <td style="color: #059669; font-weight: 700;">₹${item.totalRevenue.toFixed(2)}</td>
+                    </tr>
+                `).join("");
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="3" style="color: red;">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function loadOccupancy() {
+            const tbody = document.getElementById("occupancyTableBody");
+            try {
+                const res = await fetch('/api/reports/occupancy');
+                const list = await res.json();
+
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">No occupancy records.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = list.slice(0, 10).map(item => `
+                    <tr>
+                        <td>
+                            <strong style="color: #1e40af;">${item.busNumber}</strong><br>
+                            <small style="color: #64748b;">${item.corridor}</small>
+                        </td>
+                        <td>${item.capacity}</td>
+                        <td>${item.bookedSeats}</td>
+                        <td>
+                            <strong style="color: ${item.occupancyPercentage >= 70 ? '#15803d' : '#b45309'};">
+                                ${item.occupancyPercentage}%
+                            </strong>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color: red;">Error: ${err.message}</td></tr>`;
+            }
+        }
+    </script>
+</body>
+</html>
