@@ -59,39 +59,6 @@
             height: 280px;
             width: 100%;
         }
-        .viz-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
-            gap: 1.75rem;
-            margin-top: 1.5rem;
-        }
-        .viz-card {
-            background: #ffffff;
-            border-radius: 14px;
-            border: 1px solid var(--card-border);
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
-        }
-        .viz-card h4 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.4rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .viz-card p {
-            font-size: 0.82rem;
-            color: #64748b;
-            margin-bottom: 1rem;
-        }
-        .viz-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            border: 1px solid #f1f5f9;
-        }
     </style>
 </head>
 <body>
@@ -265,63 +232,17 @@
             </div>
         </div>
 
-        <!-- ================================================================== -->
-        <!-- PART 2: PYTHON DATA SCIENCE FIGURES (25ITC31 COURSE RUBRIC)        -->
-        <!-- ================================================================== -->
-        <div style="border-top: 2px dashed #cbd5e1; padding-top: 2rem;">
-            <div class="section-header">
-                <div>
-                    <h3 class="section-title"><i class="fab fa-python" style="color: #3776ab;"></i> Python Exploratory Data Analysis (EDA)</h3>
-                    <p style="font-size: 0.85rem; color: #64748b;">Publication-grade figures generated via Pandas, NumPy, Matplotlib & Seaborn for college assessment submission</p>
-                </div>
-                <span style="background: #dbeafe; color: #1e40af; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">
-                    7 Submission Visualizations
-                </span>
+        <!-- Data Science Information Banner -->
+        <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <div>
+                <strong style="color: #1e293b;"><i class="fab fa-python" style="color: #3776ab;"></i> Foundations of Data Science (25ITC31) Module</strong>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">
+                    Full statistical exploratory analysis, data wrangling pipelines, and Jupyter Notebook (25ITC31) are archived in <code>3_PYTHON_DATA_SCIENCE_ANALYSIS/</code> for project submission.
+                </p>
             </div>
-
-            <div class="viz-grid">
-                <div class="viz-card">
-                    <h4><i class="fas fa-chart-column" style="color: #2563eb;"></i> Route-Wise Passenger Demand</h4>
-                    <p>Bar chart of passenger counts across Tamil Nadu corridors.</p>
-                    <img src="/visualizations/01_route_wise_passenger_demand.png" alt="Route Passenger Demand">
-                </div>
-
-                <div class="viz-card">
-                    <h4><i class="fas fa-money-bill-wave" style="color: #059669;"></i> Gross Revenue by Transit Route</h4>
-                    <p>Financial breakdown of ticket collections per intercity transit corridor in Indian Rupees (₹).</p>
-                    <img src="/visualizations/02_route_wise_revenue.png" alt="Route Revenue">
-                </div>
-
-                <div class="viz-card">
-                    <h4><i class="fas fa-sliders-h" style="color: #d97706;"></i> Seat Occupancy Distribution by Bus Type</h4>
-                    <p>Box plot showing median, IQR, and variance of occupancy across AC Sleeper, Semi-Sleeper & Deluxe buses.</p>
-                    <img src="/visualizations/03_bus_type_occupancy_distribution.png" alt="Bus Type Occupancy">
-                </div>
-
-                <div class="viz-card">
-                    <h4><i class="fas fa-clock" style="color: #7c3aed;"></i> Hourly Schedule Departure Profile</h4>
-                    <p>Histogram and Kernel Density Estimate (KDE) demonstrating evening/night peak departure patterns.</p>
-                    <img src="/visualizations/04_hourly_departure_pattern.png" alt="Hourly Departure Profile">
-                </div>
-
-                <div class="viz-card">
-                    <h4><i class="fas fa-chart-pie" style="color: #ef4444;"></i> Booking Status Distribution (Donut Chart)</h4>
-                    <p>Visual proportion of confirmed passenger tickets versus customer cancellations.</p>
-                    <img src="/visualizations/05_booking_status_distribution.png" alt="Booking Status Distribution">
-                </div>
-
-                <div class="viz-card">
-                    <h4><i class="fas fa-th" style="color: #0284c7;"></i> Correlation Heatmap of Transit KPIs</h4>
-                    <p>Pearson correlation coefficients among route distance, fare, passenger count, and occupancy.</p>
-                    <img src="/visualizations/06_correlation_heatmap.png" alt="Correlation Heatmap">
-                </div>
-
-                <div class="viz-card" style="grid-column: 1 / -1;">
-                    <h4><i class="fas fa-chart-line" style="color: #0ea5e9;"></i> Daily Passenger Booking Volume Trends</h4>
-                    <p>Time-series demand curve tracking ticket booking fluctuations over days of operation.</p>
-                    <img src="/visualizations/07_daily_booking_trends.png" alt="Daily Booking Trends">
-                </div>
-            </div>
+            <span style="background: #eff6ff; color: #1e40af; font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 20px;">
+                Verified & Compliant
+            </span>
         </div>
     </main>
 
