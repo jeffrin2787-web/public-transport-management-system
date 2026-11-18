@@ -176,6 +176,13 @@ def run_tests():
         admin_bkgs = json.loads(req_admin_bkg.read().decode())
         check("Admin Master Bookings returns audit trail", len(admin_bkgs) > 0)
 
+        # TEST 16: Database Tables Inspector API
+        req_db = urllib.request.urlopen(f"{base}/api/db/all-tables")
+        all_tbls = json.loads(req_db.read().decode())
+        check("Database Tables API returns all 6 relational tables", set(all_tbls.keys()) == {"buses", "routes", "schedules", "passengers", "bookings", "tickets"})
+        check("Database Tables contain buses records", len(all_tbls["buses"]) > 0)
+        check("Database Tables contain routes records", len(all_tbls["routes"]) > 0)
+
         print("------------------------------------------------------------------")
         print(f"  TEST VERIFICATION COMPLETED: {passed}/{total} TESTS PASSED ({passed*100//total}%)")
         print("==================================================================")

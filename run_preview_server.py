@@ -155,6 +155,66 @@ class TransportHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(list(reversed(bookings)))
             return
 
+        if url == "/api/db/all-tables":
+            # Flatten relational tables for inspection
+            tbl_buses = [{"bus_id": b["id"], "bus_number": b["busNumber"], "bus_type": b["busType"], "total_capacity": b["capacity"], "operator_name": b["operatorName"]} for b in buses]
+            tbl_routes = [{"route_id": r["id"], "source_city": r["sourceCity"], "destination_city": r["destinationCity"], "distance_km": r["distanceKm"], "estimated_duration_minutes": r["estimatedDurationMinutes"]} for r in routes]
+            tbl_schedules = [{"schedule_id": s["id"], "bus_number": s["bus"]["busNumber"], "corridor": f"{s['route']['sourceCity']} -> {s['route']['destinationCity']}", "travel_date": s["travelDate"], "departure_time": s["departureTime"], "arrival_time": s["arrivalTime"], "base_fare": s["baseFare"], "available_seats": s["availableSeats"], "status": "SCHEDULED"} for s in schedules]
+            
+            seen_passengers = {}
+            tbl_passengers = []
+            for b in bookings:
+                p = b["passenger"]
+                ph = p["phoneNumber"]
+                if ph not in seen_passengers:
+                    pid = len(seen_passengers) + 1
+                    seen_passengers[ph] = pid
+                    tbl_passengers.append({
+                        "passenger_id": pid,
+                        "full_name": p["fullName"],
+                        "age": p["age"],
+                        "gender": p["gender"],
+                        "phone_number": ph,
+                        "email": p.get("email", "-")
+                    })
+
+            tbl_bookings = []
+            tbl_tickets = []
+            t_counter = 1
+            for b in bookings:
+                pid = seen_passengers.get(b["passenger"]["phoneNumber"], 1)
+                tbl_bookings.append({
+                    "booking_id": b["id"],
+                    "pnr_number": b["pnrNumber"],
+                    "schedule_id": b["schedule"]["id"],
+                    "passenger_id": pid,
+                    "passenger_name": b["passenger"]["fullName"],
+                    "booking_time": b["bookingTime"],
+                    "total_amount": b["totalAmount"],
+                    "status": b["status"],
+                    "payment_status": b["paymentStatus"]
+                })
+                for t in b["tickets"]:
+                    tbl_tickets.append({
+                        "ticket_id": t_counter,
+                        "ticket_number": f"T-{b['pnrNumber'].replace('TCK-', '')}-S{t['seatNumber']:02d}",
+                        "booking_id": b["id"],
+                        "seat_number": t["seatNumber"],
+                        "seat_fare": t["seatFare"],
+                        "status": b["status"]
+                    })
+                    t_counter += 1
+
+            self.send_json({
+                "buses": tbl_buses,
+                "routes": tbl_routes,
+                "schedules": tbl_schedules,
+                "passengers": tbl_passengers,
+                "bookings": tbl_bookings,
+                "tickets": tbl_tickets
+            })
+            return
+
         if url == "/api/reports/summary":
             confirmed = [b for b in bookings if b["status"] == "CONFIRMED"]
             rev = sum(b["totalAmount"] for b in confirmed)

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Result Tables Viewer | VCET IT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .db-tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .db-tab-btn {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            padding: 0.65rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .db-tab-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+        .db-tab-btn.active {
+            background: #1e40af;
+            color: #ffffff;
+            border-color: #1e40af;
+            box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);
+        }
+        .table-meta-bar {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .badge-pk {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 0.25rem;
+        }
+        .badge-fk {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon"><i class="fas fa-bus"></i></div>
+                <div class="brand-text">
+                    <h1>Tamil Nadu State Transit</h1>
+                    <span>VCET Assessment - Scenario 10 | Author: Jeffrin (732925ITR040)</span>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link"><i class="fas fa-search"></i> Book Tickets</a>
+                <a href="/ticket.html" class="nav-link"><i class="fas fa-ticket-alt"></i> PNR Status & Cancel</a>
+                <a href="/reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Travel Analytics</a>
+                <a href="/database.html" class="nav-link active"><i class="fas fa-database"></i> Database Tables</a>
+                <a href="/admin.html" class="nav-link"><i class="fas fa-user-shield"></i> Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero-banner" style="padding: 2rem 1.5rem 3rem;">
+        <div class="hero-content">
+            <h2 class="hero-title" style="font-size: 2rem;">Relational Database Table Inspector</h2>
+            <p class="hero-subtitle">Real-time table view showing rows, primary keys, foreign keys, and updated data across all 6 schema relations.</p>
+        </div>
+    </div>
+
+    <main class="container" style="margin-top: -2rem;">
+
+        <!-- Database Table Selector Tabs -->
+        <div class="db-tab-bar">
+            <button class="db-tab-btn active" onclick="switchTable('bookings')">
+                <i class="fas fa-receipt"></i> bookings <span id="count-bookings" style="opacity: 0.8;">(...)</span>
+            </button>
+            <button class="db-tab-btn" onclick="switchTable('tickets')">
+                <i class="fas fa-ticket"></i> tickets <span id="count-tickets" style="opacity: 0.8;">(...)</span>
+            </button>
+            <button class="db-tab-btn" onclick="switchTable('schedules')">
+                <i class="fas fa-clock"></i> schedules <span id="count-schedules" style="opacity: 0.8;">(...)</span>
+            </button>
+            <button class="db-tab-btn" onclick="switchTable('buses')">
+                <i class="fas fa-bus"></i> buses <span id="count-buses" style="opacity: 0.8;">(...)</span>
+            </button>
+            <button class="db-tab-btn" onclick="switchTable('routes')">
+                <i class="fas fa-route"></i> routes <span id="count-routes" style="opacity: 0.8;">(...)</span>
+            </button>
+            <button class="db-tab-btn" onclick="switchTable('passengers')">
+                <i class="fas fa-users"></i> passengers <span id="count-passengers" style="opacity: 0.8;">(...)</span>
+            </button>
+        </div>
+
+        <!-- Table Metadata & Search Bar -->
+        <div class="table-meta-bar">
+            <div>
+                <strong id="currentTableName" style="font-size: 1.15rem; color: #1e293b; text-transform: uppercase;">TABLE: bookings</strong>
+                <p id="currentTableDesc" style="font-size: 0.82rem; color: #64748b; margin-top: 0.2rem;">
+                    Stores transaction records, unique PNR numbers, total amount, and booking status.
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <input type="text" id="tableSearch" class="form-control" placeholder="Search rows..." onkeyup="filterTableRows()" style="max-width: 220px; height: 38px;">
+                <button class="btn-primary" onclick="loadAllTables()" style="height: 38px; padding: 0 1rem; font-size: 0.85rem;">
+                    <i class="fas fa-sync-alt"></i> Refresh Tables
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Database Result Grid -->
+        <div class="table-responsive" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <table class="custom-table" id="dbDataTable">
+                <thead id="dbTableHeader">
+                    <!-- Populated dynamically -->
+                </thead>
+                <tbody id="dbTableBody">
+                    <tr><td style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading table data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SQL Schema Summary Card -->
+        <div style="margin-top: 2rem; background: #ffffff; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem;">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
+                <i class="fas fa-project-diagram" style="color: #2563eb;"></i> Schema Constraints & Relationship Map
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; font-size: 0.85rem; color: #475569; margin-top: 0.75rem;">
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>buses &rarr; schedules:</strong> 1-to-Many on <code>bus_id [FK]</code>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>routes &rarr; schedules:</strong> 1-to-Many on <code>route_id [FK]</code>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>schedules &rarr; bookings:</strong> 1-to-Many on <code>schedule_id [FK]</code>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>passengers &rarr; bookings:</strong> 1-to-Many on <code>passenger_id [FK]</code>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>bookings &rarr; tickets:</strong> 1-to-Many on <code>booking_id [FK]</code>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px;">
+                    <strong>Normal Form:</strong> Boyce-Codd Normal Form (BCNF)
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p><strong>Velalar College of Engineering and Technology (Autonomous), Erode – 638012</strong></p>
+        <p>Department of Information Technology | Database Management Systems (25ITT31)</p>
+        <p>Student Name: <strong>Jeffrin</strong> | Register Number: <strong>732925ITR040</strong> | Class: <strong>25IT3A</strong></p>
+    </footer>
+
+    <script>
+        let dbCache = {
+            bookings: [],
+            tickets: [],
+            schedules: [],
+            buses: [],
+            routes: [],
+            passengers: []
+        };
+        let activeTable = 'bookings';
+
+        const tableMetadata = {
+            bookings: {
+                desc: "Stores reservation transactions, unique PNR numbers, passenger foreign keys, schedule foreign keys, total amount, and booking status.",
+                cols: [
+                    { key: "booking_id", label: "booking_id", isPk: true },
+                    { key: "pnr_number", label: "pnr_number" },
+                    { key: "schedule_id", label: "schedule_id", isFk: true },
+                    { key: "passenger_id", label: "passenger_id", isFk: true },
+                    { key: "passenger_name", label: "passenger_name" },
+                    { key: "booking_time", label: "booking_time" },
+                    { key: "total_amount", label: "total_amount (₹)" },
+                    { key: "status", label: "status" },
+                    { key: "payment_status", label: "payment_status" }
+                ]
+            },
+            tickets: {
+                desc: "Stores individual allocated seats for each booking with ticket numbers and individual seat fares.",
+                cols: [
+                    { key: "ticket_id", label: "ticket_id", isPk: true },
+                    { key: "ticket_number", label: "ticket_number" },
+                    { key: "booking_id", label: "booking_id", isFk: true },
+                    { key: "seat_number", label: "seat_number" },
+                    { key: "seat_fare", label: "seat_fare (₹)" },
+                    { key: "status", label: "status" }
+                ]
+            },
+            schedules: {
+                desc: "Stores scheduled bus trips linking buses to routes with departure times, arrival times, base fares, and available seats.",
+                cols: [
+                    { key: "schedule_id", label: "schedule_id", isPk: true },
+                    { key: "bus_number", label: "bus_number", isFk: true },
+                    { key: "corridor", label: "route_corridor", isFk: true },
+                    { key: "travel_date", label: "travel_date" },
+                    { key: "departure_time", label: "departure_time" },
+                    { key: "arrival_time", label: "arrival_time" },
+                    { key: "base_fare", label: "base_fare (₹)" },
+                    { key: "available_seats", label: "available_seats" },
+                    { key: "status", label: "status" }
+                ]
+            },
+            buses: {
+                desc: "Maintains fleet assets, certified capacities, bus categories (AC Sleeper, Semi-Sleeper, etc.), and operator names.",
+                cols: [
+                    { key: "bus_id", label: "bus_id", isPk: true },
+                    { key: "bus_number", label: "bus_number" },
+                    { key: "bus_type", label: "bus_type" },
+                    { key: "total_capacity", label: "total_capacity" },
+                    { key: "operator_name", label: "operator_name" }
+                ]
+            },
+            routes: {
+                desc: "Maintains transit corridors across Tamil Nadu with source city, destination city, distance in km, and duration in minutes.",
+                cols: [
+                    { key: "route_id", label: "route_id", isPk: true },
+                    { key: "source_city", label: "source_city" },
+                    { key: "destination_city", label: "destination_city" },
+                    { key: "distance_km", label: "distance_km" },
+                    { key: "estimated_duration_minutes", label: "estimated_duration_minutes" }
+                ]
+            },
+            passengers: {
+                desc: "Stores customer demographic profiles, contact phone numbers, ages, and email addresses.",
+                cols: [
+                    { key: "passenger_id", label: "passenger_id", isPk: true },
+                    { key: "full_name", label: "full_name" },
+                    { key: "age", label: "age" },
+                    { key: "gender", label: "gender" },
+                    { key: "phone_number", label: "phone_number" },
+                    { key: "email", label: "email" }
+                ]
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAllTables();
+        });
+
+        async function loadAllTables() {
+            try {
+                const res = await fetch('/api/db/all-tables');
+                if (!res.ok) throw new Error("Could not fetch tables");
+                dbCache = await res.json();
+
+                // Update badge counts
+                Object.keys(dbCache).forEach(tbl => {
+                    const el = document.getElementById(`count-${tbl}`);
+                    if (el) el.textContent = `(${dbCache[tbl].length})`;
+                });
+
+                renderTable(activeTable);
+            } catch (err) {
+                console.error("Failed to load tables:", err);
+                document.getElementById("dbTableBody").innerHTML = `
+                    <tr><td colspan="10" style="color: red; text-align: center; padding: 2rem;">
+                        Failed to load database tables: ${err.message}
+                    </td></tr>
+                `;
+            }
+        }
+
+        function switchTable(tableName) {
+            activeTable = tableName;
+            document.querySelectorAll(".db-tab-btn").forEach(btn => btn.classList.remove("active"));
+            event.currentTarget.classList.add("active");
+
+            document.getElementById("currentTableName").textContent = `TABLE: ${tableName}`;
+            document.getElementById("currentTableDesc").textContent = tableMetadata[tableName].desc;
+            document.getElementById("tableSearch").value = "";
+
+            renderTable(tableName);
+        }
+
+        function renderTable(tableName) {
+            const meta = tableMetadata[tableName];
+            const rows = dbCache[tableName] || [];
+
+            // 1. Build Header
+            const thead = document.getElementById("dbTableHeader");
+            thead.innerHTML = `
+                <tr>
+                    ${meta.cols.map(c => `
+                        <th>
+                            ${c.label}
+                            ${c.isPk ? '<span class="badge-pk">PK</span>' : ''}
+                            ${c.isFk ? '<span class="badge-fk">FK</span>' : ''}
+                        </th>
+                    `).join("")}
+                </tr>
+            `;
+
+            // 2. Build Body
+            const tbody = document.getElementById("dbTableBody");
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${meta.cols.length}" style="text-align: center; padding: 2rem;">No records found in table '${tableName}'.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(r => {
+                return `
+                    <tr>
+                        ${meta.cols.map(c => {
+                            let val = r[c.key];
+                            if (val === undefined || val === null) val = "-";
+
+                            // Style status badges
+                            if (c.key === 'status') {
+                                const isOk = val === 'CONFIRMED' || val === 'SCHEDULED';
+                                const color = isOk ? '#16a34a' : '#dc2626';
+                                const bg = isOk ? '#dcfce7' : '#fee2e2';
+                                return `<td><span style="background: ${bg}; color: ${color}; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${val}</span></td>`;
+                            }
+
+                            if (c.key === 'total_amount' || c.key === 'base_fare' || c.key === 'seat_fare') {
+                                return `<td style="font-weight: 700; color: #047857;">₹${Number(val).toFixed(2)}</td>`;
+                            }
+
+                            if (c.isPk) {
+                                return `<td><strong style="color: #1e40af;">${val}</strong></td>`;
+                            }
+
+                            return `<td>${val}</td>`;
+                        }).join("")}
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function filterTableRows() {
+            const q = document.getElementById("tableSearch").value.toLowerCase();
+            const rows = document.querySelectorAll("#dbTableBody tr");
+            rows.forEach(tr => {
+                const text = tr.textContent.toLowerCase();
+                tr.style.display = text.includes(q) ? "" : "none";
+            });
+        }
+    </script>
+</body>
+</html>
