@@ -8,15 +8,14 @@
 FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (layer caching)
+# Copy pom.xml and full source tree
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-# Copy full source tree and compile/package
 COPY src ./src
+
+# Build production executable JAR (skipping tests for speed)
 RUN mvn clean package -DskipTests
 
-# STAGE 2: Lightweight Production Runtime Image
+# STAGE 2: Lightweight Production Runtime Image (Java 17 JRE)
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
@@ -27,9 +26,9 @@ USER appuser
 # Copy executable jar from builder stage
 COPY --from=builder /app/target/*.jar app.jar
 
-# Expose HTTP port (Render uses environment variable PORT, default 8080)
+# Render binds to environment variable PORT (default 8080 or 10000)
 EXPOSE 8080
 ENV PORT=8080
 
-# Run Spring Boot Application
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+# Run Spring Boot Application with memory tuning for Render Free Tier (512MB)
+ENTRYPOINT ["java", "-Xmx350m", "-XX:+UseContainerSupport", "-Dserver.port=${PORT}", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
