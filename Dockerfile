@@ -12,15 +12,17 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build production executable JAR (skipping tests for speed)
+# Build production executable JAR (skipping tests for fast build)
 RUN mvn clean package -DskipTests
 
 # STAGE 2: Lightweight Production Runtime Image (Java 17 JRE)
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
-# Non-root security user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Setup non-root appuser with full ownership of /app
+RUN groupadd -r appuser && useradd -r -g appuser -d /app appuser \
+    && mkdir -p /app/data && chown -R appuser:appuser /app
+
 USER appuser
 
 # Copy executable jar from builder stage
