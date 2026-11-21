@@ -106,14 +106,15 @@ def create_and_seed_database():
     )
     """)
     passengers_data = [
-        (1, 'Jeffrin', 20, 'MALE', '9876543210', 'jeffrin@vcet.ac.in'),
-        (2, 'Anand Kumar', 28, 'MALE', '9842156789', 'anand.k@gmail.com'),
-        (3, 'Priya Dharshini', 24, 'FEMALE', '9789123456', 'priya.d@yahoo.com'),
-        (4, 'Karthik Raja', 32, 'MALE', '9443218765', 'karthik.r@live.com'),
-        (5, 'Deepa Mohan', 21, 'FEMALE', '9944556677', 'deepa.m@outlook.com'),
-        (6, 'Vigneshwaran S', 26, 'MALE', '9629112233', 'vignesh.s@gmail.com'),
-        (7, 'Soundarya Lakshmi', 29, 'FEMALE', '9500443322', 'soundarya@gmail.com'),
-        (8, 'Saravanan R', 45, 'MALE', '9442332211', 'saravanan.r@gmail.com')
+        (1, 'Anand Kumar', 28, 'MALE', '9842156789', 'anand.k@gmail.com'),
+        (2, 'Priya Dharshini', 24, 'FEMALE', '9789123456', 'priya.d@yahoo.com'),
+        (3, 'Karthik Raja', 32, 'MALE', '9443218765', 'karthik.r@live.com'),
+        (4, 'Deepa Mohan', 21, 'FEMALE', '9944556677', 'deepa.m@outlook.com'),
+        (5, 'Vigneshwaran S', 26, 'MALE', '9629112233', 'vignesh.s@gmail.com'),
+        (6, 'Soundarya Lakshmi', 29, 'FEMALE', '9500443322', 'soundarya@gmail.com'),
+        (7, 'Saravanan R', 45, 'MALE', '9442332211', 'saravanan.r@gmail.com'),
+        (8, 'Jeffrin', 20, 'MALE', '9876543210', 'jeffrin@gmail.com'),
+        (9, 'Rio', 24, 'MALE', '6789054321', 'rio123@gmail.com')
     ]
     cursor.executemany("INSERT INTO passengers VALUES (?, ?, ?, ?, ?, ?)", passengers_data)
 

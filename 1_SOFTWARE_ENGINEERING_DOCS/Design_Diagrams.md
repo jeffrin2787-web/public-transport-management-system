@@ -242,7 +242,62 @@ classDiagram
 
 ---
 
-## 4. SEQUENCE DIAGRAM: TICKET BOOKING & OVERBOOKING PREVENTION
+## 4. COMPONENT DIAGRAM
+
+The UML Component Diagram describes the organization and wiring of the physical components across the presentation, application, data, and analytics subsystems.
+
+```mermaid
+componentDiagram
+    package "1. Client & Presentation Tier" {
+        [Web Browser UI Component\n(HTML5 / Tailwind CSS / Vanilla JS)] as WebUI
+        [Interactive Seat Grid Component] as SeatUI
+        [Chart.js BI Visualizer Component] as ChartUI
+    }
+
+    package "2. Application Tier (Spring Boot / Java 17)" {
+        [REST API Controller Component] as Controllers
+        [Validation & Security Component] as Validator
+        [Booking Service Component\n(Synchronized Concurrency Lock)] as BookingSvc
+        [Fleet & Route Management Component] as FleetSvc
+        [Reporting & Aggregation Component] as ReportSvc
+        [Spring Data JPA Component] as JPA
+    }
+
+    package "3. Relational Persistence Tier" {
+        database "PostgreSQL Relational DB\n(buses, routes, schedules, bookings, tickets)" as DB
+        [Database Result Table Inspector API] as DBInspector
+    }
+
+    package "4. Data Science & Analytics Subsystem" {
+        [Python Analytics Script\n(passenger_travel_analysis.py)] as PyScript
+        [Pandas & Seaborn Engine] as PyEngine
+        [Generated Visualizations (.png)] as Visuals
+    }
+
+    WebUI --> Controllers : HTTP REST / JSON
+    SeatUI --> Controllers : /api/schedules/{id}/seats
+    ChartUI --> Controllers : /api/reports/chart-data
+    
+    Controllers --> Validator : Validate DTOs
+    Validator --> BookingSvc : Invoke Booking & Cancel
+    Validator --> FleetSvc : Manage Buses & Routes
+    Controllers --> ReportSvc : Request Metrics
+    Controllers --> DBInspector : Query Table Metadata
+
+    BookingSvc --> JPA : Entity Transactions
+    FleetSvc --> JPA : Fleet CRUD
+    ReportSvc --> JPA : Aggregations
+    DBInspector --> JPA : Table Scans
+
+    JPA --> DB : JDBC / HikariCP Pool (Port 5432)
+    DB ..> PyScript : Extract Transactional CSV
+    PyScript --> PyEngine : Clean & Model Data
+    PyEngine --> Visuals : Export 7 Static Plots
+```
+
+---
+
+## 5. SEQUENCE DIAGRAM: TICKET BOOKING & OVERBOOKING PREVENTION
 
 This sequence diagram depicts the **multithreaded synchronized transaction** workflow when a passenger books a ticket, highlighting race-condition prevention and atomic seat decrement.
 
@@ -289,7 +344,7 @@ sequenceDiagram
 
 ---
 
-## 5. SEQUENCE DIAGRAM: TICKET CANCELLATION & SEAT RELEASE
+## 6. SEQUENCE DIAGRAM: TICKET CANCELLATION & SEAT RELEASE
 
 ```mermaid
 sequenceDiagram
@@ -321,7 +376,7 @@ sequenceDiagram
 
 ---
 
-## 6. ACTIVITY DIAGRAM: END-TO-END PASSENGER BOOKING WORKFLOW
+## 7. ACTIVITY DIAGRAM: END-TO-END PASSENGER BOOKING WORKFLOW
 
 ```mermaid
 flowchart TD

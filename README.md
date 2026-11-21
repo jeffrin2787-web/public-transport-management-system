@@ -49,10 +49,12 @@ d:\SEM PROJECT\
 ├── pom.xml                                      # Maven dependencies (Java 17, Spring Boot, JPA, PostgreSQL)
 ├── .gitignore                                   # Git configuration
 │
-├── 1_SOFTWARE_ENGINEERING_DOCS/                 # Requirement 1: SRS, Design diagrams, testing documents
-│   ├── SRS_Document.md                          # IEEE 830 format SRS Document
-│   ├── Design_Diagrams.md                       # Mermaid Use Case, Class, Sequence & Architecture
-│   └── Testing_Document_and_Test_Cases.md       # Black box & white box testing, test cases table
+├── 1_SOFTWARE_ENGINEERING_DOCS/                 # 25ITT33: Unit-wise SE documentation, diagrams, testing & COCOMO
+│   ├── UNIT_WISE_SOFTWARE_ENGINEERING_PORTFOLIO.md # Master Comprehensive Portfolio (Units 1 to 5)
+│   ├── SRS_Document.md                          # IEEE 830 format SRS Document (Units 1 & 2)
+│   ├── Design_Diagrams.md                       # Mermaid Architecture, Class, Component, Sequence (Unit 3)
+│   ├── Testing_Document_and_Test_Cases.md       # V&V, White/Black Box test tables, Cyclomatic Complexity (Unit 4)
+│   └── Project_Management_and_COCOMO.md         # 4P's, LOC (8,884), Function Points & COCOMO calculations (Unit 5)
 │
 ├── 2_DATABASE_DESIGN_AND_SQL/                   # Requirement 3 & 5: ER Diagram, relational model, SQL scripts, normalization
 │   ├── ER_Diagram_and_Relational_Model.md       # Entity-Relationship diagram, schemas, constraints
