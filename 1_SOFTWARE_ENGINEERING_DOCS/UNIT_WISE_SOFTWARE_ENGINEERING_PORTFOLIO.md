@@ -263,72 +263,44 @@ The application adopts the **Multi-Tiered Layered Architecture** integrated with
 
 ```mermaid
 flowchart TD
-    subgraph Tier1 ["1. PRESENTATION TIER (Web Client)"]
+    subgraph Tier1 ["1. Client / Presentation Layer (Web Browser)"]
         Browser["Desktop & Mobile Web Browser"]
-        V_Home["Bus Search & Discovery (index.html)"]
-        V_Seat["Interactive Bus Seat Selector"]
-        V_Ticket["PNR Boarding Pass & Cancellation (ticket.html)"]
-        V_Report["Real-time Live Charts (reports.html)"]
-        V_DB["Live Database Inspector (database.html)"]
-        V_Admin["Admin Management Panel (admin.html)"]
+        UI_Home["Bus Search & Discovery View (index.html)"]
+        UI_Seat["Interactive Seat Layout Selector"]
+        UI_Ticket["Ticket Download & PNR Lookup (ticket.html)"]
+        UI_Admin["Admin Management Console (admin.html)"]
+        UI_Report["Real-time Live Charts (reports.html)"]
+        UI_DB["Database Table Inspector (database.html)"]
     end
 
-    subgraph Tier2 ["2. APPLICATION & BUSINESS LOGIC TIER (Java 17 / Spring Boot)"]
-        subgraph Controllers ["Controller Layer (REST Endpoints)"]
-            BC["BookingController (/api/bookings)"]
-            AC["AdminController (/api/admin)"]
-            RC["ReportController (/api/reports)"]
-            DC["DatabaseViewerController (/api/db)"]
-        end
-
-        subgraph SecurityValidation ["Validation & Security Layer"]
-            VAL["Input Sanitizer & Bean Validator"]
-            EXH["GlobalExceptionHandler (HTTP 400, 404, 409)"]
-        end
-
-        subgraph ServiceLayer ["Service Layer (Synchronized Business Logic)"]
-            BS["BookingServiceImpl<br/>(synchronized atomic booking & seat release)"]
-            BusS["BusServiceImpl & RouteServiceImpl"]
-            SS["ScheduleServiceImpl"]
-            RS["ReportServiceImpl (Aggregates & Metrics)"]
-        end
-
-        subgraph DataAccessLayer ["Data Access Layer (Spring Data JPA)"]
-            BR["BusRepository"]
-            RR["RouteRepository"]
-            SR["ScheduleRepository"]
-            PR["PassengerRepository"]
-            BKR["BookingRepository"]
-            TR["TicketRepository"]
-        end
+    subgraph Tier2 ["2. Application / Business Logic Layer (Java 17 / Spring Boot)"]
+        Controller["REST Controllers<br/>(Booking, Admin, Report, Database)"]
+        Security["Validation & Global Exception Handler"]
+        Services["Service Core<br/>(BookingServiceImpl with Concurrency Lock, BusService)"]
+        Repo["Data Access Layer<br/>(Spring Data JPA Repositories)"]
     end
 
-    subgraph Tier3 ["3. PERSISTENCE TIER (Relational Database)"]
+    subgraph Tier3 ["3. Relational Persistence Layer (PostgreSQL)"]
         DB[(PostgreSQL Database / Neon Cloud)]
-        T_Buses[("buses table")]
-        T_Routes[("routes table")]
-        T_Sched[("schedules table")]
-        T_Pass[("passengers table")]
-        T_Book[("bookings table")]
-        T_Tick[("tickets table")]
-        V_Views[("vw_route_revenue_summary & views")]
+        Tables["Relational Tables:<br/>buses, routes, schedules, passengers, bookings, tickets"]
+        Views["Analytical Views:<br/>vw_route_revenue_summary, vw_schedule_occupancy"]
     end
 
-    subgraph Tier4 ["4. DATA SCIENCE & ANALYTICS TIER (Python 3.x)"]
-        P_Script["passenger_travel_analysis.py & .ipynb"]
-        P_Pandas["Pandas / NumPy Data Cleaning Engine"]
-        P_Plots["Seaborn & Matplotlib Visualization Engine"]
-        P_Data[("public_transport_dataset.csv (150 records)")]
+    subgraph Tier4 ["4. Data Science & Visualizations Layer (Python 3.x)"]
+        PythonScript["passenger_travel_analysis.py & Jupyter Notebook"]
+        PandasEngine["Pandas & NumPy Data Cleaning Engine"]
+        Charts["Matplotlib & Seaborn Visualizations (7 Figures)"]
+        Dataset[("public_transport_dataset.csv (150 Records)")]
     end
 
-    Browser --> V_Home & V_Seat & V_Ticket & V_Report & V_DB & V_Admin
-    V_Home & V_Seat & V_Ticket & V_Report & V_DB & V_Admin -->|HTTP / JSON REST| Controllers
-    Controllers --> VAL --> EXH --> ServiceLayer
-    ServiceLayer --> DataAccessLayer
-    DataAccessLayer -->|JDBC Connection Pool (HikariCP)| DB
-    DB --- T_Buses & T_Routes & T_Sched & T_Pass & T_Book & T_Tick & V_Views
-    DB -.->|ETL Pipeline / CSV Extraction| P_Script
-    P_Script --> P_Data --> P_Pandas --> P_Plots
+    Browser --> UI_Home & UI_Seat & UI_Ticket & UI_Admin & UI_Report & UI_DB
+    UI_Home & UI_Seat & UI_Ticket & UI_Admin & UI_Report & UI_DB --> Controller
+    Controller --> Security --> Services --> Repo
+    Repo -->|JDBC Connection Pool| DB
+    DB --> Tables & Views
+    DB -.->|ETL Query / Data Extraction| PythonScript
+    PythonScript --> Dataset --> PandasEngine --> Charts
+    Charts -.->|Embed Generated Visuals| UI_Report
 ```
 
 ## 3.4 Detailed UML Class Diagram
@@ -465,42 +437,52 @@ classDiagram
 ## 3.5 UML Component Diagram
 
 ```mermaid
-componentDiagram
-    package "Presentation Tier" {
-        [Web UI Component\n(HTML5 / Tailwind / JS)] as UI
-        [Chart.js BI Component] as ChartsUI
-    }
+flowchart TD
+    subgraph PkgPresentation ["Package: 1. Client & Presentation Tier"]
+        UI["«component»<br/><b>Web UI Component</b><br/>(HTML5 / Tailwind CSS / Vanilla JS)"]
+        SeatUI["«component»<br/><b>Interactive Seat Grid Component</b>"]
+        ChartUI["«component»<br/><b>Chart.js BI Visualizer Component</b>"]
+    end
 
-    package "Spring Boot Application Core" {
-        [REST API Controller Component] as Controllers
-        [Validation Component] as Validator
-        [Booking Service Component\n(Synchronized Concurrency)] as BookingSvc
-        [Fleet & Route Service Component] as FleetSvc
-        [Reporting Service Component] as ReportSvc
-        [Spring Data JPA Component] as JPA
-    }
+    subgraph PkgApp ["Package: 2. Application Tier (Spring Boot / Java 17)"]
+        Controllers["«component»<br/><b>REST API Controller Component</b>"]
+        Validator["«component»<br/><b>Validation & Security Component</b>"]
+        BookingSvc["«component»<br/><b>Booking Service Component</b><br/>(Synchronized Concurrency Lock)"]
+        FleetSvc["«component»<br/><b>Fleet & Route Service Component</b>"]
+        ReportSvc["«component»<br/><b>Reporting & Aggregation Component</b>"]
+        JPA["«component»<br/><b>Spring Data JPA Component</b>"]
+    end
 
-    package "Database Tier" {
-        database "PostgreSQL Relational DB" as PostgreSQL
-    }
+    subgraph PkgDB ["Package: 3. Relational Persistence Tier"]
+        DB[("«database»<br/><b>PostgreSQL Relational DB</b><br/>(buses, routes, schedules, bookings, tickets)")]
+        DBInspector["«component»<br/><b>Database Table Inspector Component</b>"]
+    end
 
-    package "Data Science Pipeline" {
-        [Python Analytics Script] as PyAnalytics
-        [Visualizations Store] as PyPlots
-    }
+    subgraph PkgAnalytics ["Package: 4. Data Science Subsystem"]
+        PyScript["«component»<br/><b>Python Analytics Script</b><br/>(passenger_travel_analysis.py)"]
+        PyEngine["«component»<br/><b>Pandas & Seaborn Engine</b>"]
+        Visuals["«artifact»<br/><b>Generated Visualizations (7 PNGs)</b>"]
+    end
 
-    UI --> Controllers : REST Calls
-    ChartsUI --> Controllers : /api/reports/chart-data
-    Controllers --> Validator : Validate Input
-    Validator --> BookingSvc : Invoke Booking
-    Validator --> FleetSvc : Manage Assets
-    Controllers --> ReportSvc : Fetch Metrics
-    BookingSvc --> JPA : Entity Operations
-    FleetSvc --> JPA : CRUD Operations
-    ReportSvc --> JPA : Aggregations
-    JPA --> PostgreSQL : SQL Queries (HikariCP)
-    PostgreSQL ..> PyAnalytics : Data Ingestion
-    PyAnalytics --> PyPlots : Generates Charts
+    UI -->|HTTP REST / JSON| Controllers
+    SeatUI -->|Query Seats| Controllers
+    ChartUI -->|Fetch Metrics| Controllers
+
+    Controllers --> Validator
+    Validator --> BookingSvc
+    Validator --> FleetSvc
+    Controllers --> ReportSvc
+    Controllers --> DBInspector
+
+    BookingSvc --> JPA
+    FleetSvc --> JPA
+    ReportSvc --> JPA
+    DBInspector --> JPA
+
+    JPA -->|JDBC Connection Pool| DB
+    DB -.->|Data Extraction| PyScript
+    PyScript --> PyEngine
+    PyEngine --> Visuals
 ```
 
 ## 3.6 UML Sequence Diagram (Concurrent Booking & Cancellation)

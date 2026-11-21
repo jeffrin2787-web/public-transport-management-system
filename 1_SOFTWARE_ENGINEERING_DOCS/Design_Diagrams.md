@@ -247,52 +247,52 @@ classDiagram
 The UML Component Diagram describes the organization and wiring of the physical components across the presentation, application, data, and analytics subsystems.
 
 ```mermaid
-componentDiagram
-    package "1. Client & Presentation Tier" {
-        [Web Browser UI Component\n(HTML5 / Tailwind CSS / Vanilla JS)] as WebUI
-        [Interactive Seat Grid Component] as SeatUI
-        [Chart.js BI Visualizer Component] as ChartUI
-    }
+flowchart TD
+    subgraph PkgPresentation ["Package: 1. Client & Presentation Tier"]
+        WebUI["«component»<br/><b>Web Browser UI Component</b><br/>(HTML5 / Tailwind CSS / Vanilla JS)"]
+        SeatUI["«component»<br/><b>Interactive Seat Grid Component</b>"]
+        ChartUI["«component»<br/><b>Chart.js BI Visualizer Component</b>"]
+    end
 
-    package "2. Application Tier (Spring Boot / Java 17)" {
-        [REST API Controller Component] as Controllers
-        [Validation & Security Component] as Validator
-        [Booking Service Component\n(Synchronized Concurrency Lock)] as BookingSvc
-        [Fleet & Route Management Component] as FleetSvc
-        [Reporting & Aggregation Component] as ReportSvc
-        [Spring Data JPA Component] as JPA
-    }
+    subgraph PkgApp ["Package: 2. Application Tier (Spring Boot / Java 17)"]
+        Controllers["«component»<br/><b>REST API Controller Component</b>"]
+        Validator["«component»<br/><b>Validation & Security Component</b>"]
+        BookingSvc["«component»<br/><b>Booking Service Component</b><br/>(Synchronized Concurrency Lock)"]
+        FleetSvc["«component»<br/><b>Fleet & Route Management Component</b>"]
+        ReportSvc["«component»<br/><b>Reporting & Aggregation Component</b>"]
+        JPA["«component»<br/><b>Spring Data JPA Component</b>"]
+    end
 
-    package "3. Relational Persistence Tier" {
-        database "PostgreSQL Relational DB\n(buses, routes, schedules, bookings, tickets)" as DB
-        [Database Result Table Inspector API] as DBInspector
-    }
+    subgraph PkgDB ["Package: 3. Relational Persistence Tier"]
+        DB[("«database»<br/><b>PostgreSQL Relational DB</b><br/>(buses, routes, schedules, bookings, tickets)")]
+        DBInspector["«component»<br/><b>Database Table Inspector Component</b>"]
+    end
 
-    package "4. Data Science & Analytics Subsystem" {
-        [Python Analytics Script\n(passenger_travel_analysis.py)] as PyScript
-        [Pandas & Seaborn Engine] as PyEngine
-        [Generated Visualizations (.png)] as Visuals
-    }
+    subgraph PkgAnalytics ["Package: 4. Data Science Subsystem"]
+        PyScript["«component»<br/><b>Python Analytics Script</b><br/>(passenger_travel_analysis.py)"]
+        PyEngine["«component»<br/><b>Pandas & Seaborn Engine</b>"]
+        Visuals["«artifact»<br/><b>Generated Visualizations (7 PNGs)</b>"]
+    end
 
-    WebUI --> Controllers : HTTP REST / JSON
-    SeatUI --> Controllers : /api/schedules/{id}/seats
-    ChartUI --> Controllers : /api/reports/chart-data
-    
-    Controllers --> Validator : Validate DTOs
-    Validator --> BookingSvc : Invoke Booking & Cancel
-    Validator --> FleetSvc : Manage Buses & Routes
-    Controllers --> ReportSvc : Request Metrics
-    Controllers --> DBInspector : Query Table Metadata
+    WebUI -->|HTTP REST / JSON| Controllers
+    SeatUI -->|Query Seats| Controllers
+    ChartUI -->|Fetch Metrics| Controllers
 
-    BookingSvc --> JPA : Entity Transactions
-    FleetSvc --> JPA : Fleet CRUD
-    ReportSvc --> JPA : Aggregations
-    DBInspector --> JPA : Table Scans
+    Controllers --> Validator
+    Validator --> BookingSvc
+    Validator --> FleetSvc
+    Controllers --> ReportSvc
+    Controllers --> DBInspector
 
-    JPA --> DB : JDBC / HikariCP Pool (Port 5432)
-    DB ..> PyScript : Extract Transactional CSV
-    PyScript --> PyEngine : Clean & Model Data
-    PyEngine --> Visuals : Export 7 Static Plots
+    BookingSvc --> JPA
+    FleetSvc --> JPA
+    ReportSvc --> JPA
+    DBInspector --> JPA
+
+    JPA -->|JDBC Connection Pool| DB
+    DB -.->|Data Extraction| PyScript
+    PyScript --> PyEngine
+    PyEngine --> Visuals
 ```
 
 ---
